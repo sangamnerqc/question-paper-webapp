@@ -1,5 +1,5 @@
 const SCRIPT_URL =
-  "https://script.google.com/a/macros/sangamnercollege.edu.in/s/AKfycby96yuI-aGAUM7ko_7hI47VyYuFfR7J6hLKNk19gXFoBF4A6FIyWKctzkHmPrd6t_ky/exec";
+  "https://script.google.com/a/macros/sangamnercollege.edu.in/s/AKfycbzivl6mhgvVAY3FG0hYMgWQDwREcFjt4DghLKKORP1E1wSPPVl-_nZtY68jFTCH_3YM/exec";
 
 const TEMPLATE_ID = "PUT_REAL_TEMPLATE_DOC_ID_HERE";
 
