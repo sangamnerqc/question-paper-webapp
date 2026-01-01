@@ -1,24 +1,44 @@
-const SCRIPT_URL = "https://script.google.com/a/macros/sangamnercollege.edu.in/s/AKfycbwltB6AJmzxEL1cegymeGpmwiYtoq8CEQtmjXkiddg3igd62TlMa6DmXiaRWEJxk3A5/exec";
+const SCRIPT_URL =
+  "https://script.google.com/a/macros/sangamnercollege.edu.in/s/AKfycbwltB6AJmzxEL1cegymeGpmwiYtoq8CEQtmjXkiddg3igd62TlMa6DmXiaRWEJxk3A5/exec";
+
+const TEMPLATE_ID = "PUT_REAL_TEMPLATE_DOC_ID_HERE";
 
 let selectedQuestions = [];
+
+/***************************************
+ * COMMON FETCH WRAPPER
+ ***************************************/
+function postToScript(payload) {
+  return fetch(SCRIPT_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  }).then(res => res.json());
+}
 
 /***************************************
  * LOAD QUESTIONS
  ***************************************/
 function loadQuestions() {
-  const payload = {
-    action: "getQuestions",
-    className: document.getElementById("className").value,
-    courseCode: document.getElementById("courseCode").value,
-    marks: document.getElementById("marks").value
-  };
+  selectedQuestions = [];
+  document.getElementById("questionList").innerHTML = "Loading…";
 
-  fetch(SCRIPT_URL, {
-    method: "POST",
-    body: JSON.stringify(payload)
+  postToScript({
+    action: "getQuestions",
+    className: document.getElementById("className").value.trim(),
+    courseCode: document.getElementById("courseCode").value.trim(),
+    marks: document.getElementById("marks").value
   })
-  .then(res => res.json())
-  .then(data => renderQuestions(data));
+  .then(data => {
+    if (data.error) {
+      alert(data.error);
+      return;
+    }
+    renderQuestions(data);
+  })
+  .catch(err => alert("Error loading questions"));
 }
 
 /***************************************
@@ -28,12 +48,20 @@ function renderQuestions(questions) {
   const div = document.getElementById("questionList");
   div.innerHTML = "";
 
+  if (!questions.length) {
+    div.innerHTML = "No FREE questions available.";
+    return;
+  }
+
   questions.forEach(q => {
     const block = document.createElement("div");
     block.className = "question";
     block.innerHTML = `
-      <input type="checkbox" onchange="toggleQuestion(this, '${q.qid}', '${q.text}')">
-      <b>${q.qid}</b> (Module ${q.module})
+      <label>
+        <input type="checkbox"
+          onchange="toggleQuestion(this, '${q.qid.replace(/'/g,"")}', '${q.text.replace(/'/g,"")}')">
+        <b>${q.qid}</b> (Module ${q.module})
+      </label>
       <p>${q.text}</p>
     `;
     div.appendChild(block);
@@ -45,7 +73,7 @@ function renderQuestions(questions) {
  ***************************************/
 function toggleQuestion(cb, qid, text) {
   if (cb.checked) {
-    selectedQuestions.push({ qid, text, placeholder: qid });
+    selectedQuestions.push({ qid, text });
   } else {
     selectedQuestions = selectedQuestions.filter(q => q.qid !== qid);
   }
@@ -55,16 +83,21 @@ function toggleQuestion(cb, qid, text) {
  * PRINT PREVIEW
  ***************************************/
 function previewPaper() {
-  fetch(SCRIPT_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "preview",
-      selected: selectedQuestions,
-      templateId: "<<<TEMPLATE_DOC_ID>>>"
-    })
+  if (!selectedQuestions.length) {
+    alert("Select questions first");
+    return;
+  }
+
+  postToScript({
+    action: "preview",
+    selected: selectedQuestions,
+    templateId: TEMPLATE_ID
   })
-  .then(res => res.json())
   .then(data => {
+    if (data.error) {
+      alert(data.error);
+      return;
+    }
     document.getElementById("previewBox").innerText = data.preview;
   });
 }
@@ -73,19 +106,26 @@ function previewPaper() {
  * CONFIRM & PRINT
  ***************************************/
 function confirmAndPrint() {
-  fetch(SCRIPT_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "confirm",
-      className: document.getElementById("className").value,
-      courseCode: document.getElementById("courseCode").value,
-      marks: document.getElementById("marks").value,
-      setName: document.getElementById("setName").value,
-      usedQIDs: selectedQuestions.map(q => q.qid),
-      finalText: document.getElementById("previewBox").innerText,
-      filename: "QuestionPaper"
-    })
+  if (!document.getElementById("previewBox").innerText.trim()) {
+    alert("Generate preview first");
+    return;
+  }
+
+  postToScript({
+    action: "confirm",
+    className: document.getElementById("className").value.trim(),
+    courseCode: document.getElementById("courseCode").value.trim(),
+    marks: document.getElementById("marks").value,
+    setName: document.getElementById("setName").value,
+    usedQIDs: selectedQuestions.map(q => q.qid),
+    finalText: document.getElementById("previewBox").innerText,
+    filename: "QuestionPaper"
   })
-  .then(res => res.json())
-  .then(data => alert("PDF Generated Successfully"));
+  .then(data => {
+    if (data.error) {
+      alert(data.error);
+      return;
+    }
+    alert("PDF generated successfully");
+  });
 }
