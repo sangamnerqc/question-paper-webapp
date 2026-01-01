@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Question Paper Generator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h2>Automated Question Paper Generator</h2>
+
+<div class="form">
+  <label>Class</label>
+  <input id="className" placeholder="FY-BSc">
+
+  <label>Course Code</label>
+  <input id="courseCode" placeholder="PHY-C001">
+
+  <label>Marks</label>
+  <select id="marks">
+    <option value="2">2 Marks</option>
+    <option value="4">4 Marks</option>
+    <option value="10">10 Marks</option>
+  </select>
+
+  <label>Set</label>
+  <select id="setName">
+    <option value="Set-A">Set A</option>
+    <option value="Set-B">Set B</option>
+    <option value="Set-C">Set C</option>
+  </select>
+
+  <button onclick="loadQuestions()">Load Questions</button>
+</div>
+
+<hr>
+
+<div id="questionList"></div>
+
+<hr>
+
+<button onclick="previewPaper()">Print Preview</button>
+<button class="confirm" onclick="confirmAndPrint()">Confirm & Print</button>
+
+<h3>Preview</h3>
+<pre id="previewBox"></pre>
+
+<script src="app.js"></script>
+</body>
+</html>
